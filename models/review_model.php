@@ -81,7 +81,7 @@ class Review
         return $this->reviewID = uniqid("", true);
     }
 
-    public function setProduct($product)
+    private function setProduct(Product $product)
     {
         if (is_subclass_of($product, "Product")) {
             $this->product = $product;
