@@ -1,4 +1,6 @@
 <?php
+require_once('review_model.php');
+
 // Generic Enum
 // http://stackoverflow.com/questions/254514/php-and-enumerations
 abstract class BasicEnum
@@ -64,18 +66,20 @@ abstract class Language extends BasicEnum
 abstract class Product
 {
     private $appID; // int
-    private $name; // string
-    private $desc; // string
-    private $website; // string
-    private $os; // array(OS)
-    private $langs; // array(Language)
-    private $iconPath; // string
+    protected $name; // string
+    protected $desc; // string
+    protected $version; // string
+    protected $website; // string
+    protected $os; // array(OS)
+    protected $langs; // array(Language)
+    protected $iconPath; // string
 
-    function __construct($appID, $name, $desc, $website, $os, $langs, $iconPath)
+    function __construct($name, $desc, $version, $website, $os, $langs, $iconPath)
     {
-        $this->setAppID($appID);
+        $this->setAppID();
         $this->setName($name);
         $this->setDescription($desc);
+        $this->setVersion($version);
         $this->setWebsite($website);
         $this->setOS($os);
         $this->setLanguages($langs);
@@ -101,6 +105,8 @@ abstract class Product
         } else if (!isset($this->name)) {
             return false;
         } else if (!isset($this->desc)) {
+            return false;
+        } else if (!isset($this->version)) {
             return false;
         } else if (!isset($this->website)) {
             return false;
@@ -131,6 +137,11 @@ abstract class Product
         return $this->desc;
     }
 
+    public function getVersion()
+    {
+        return $this->version;
+    }
+
     public function getWebsite()
     {
         return $this->website;
@@ -152,13 +163,9 @@ abstract class Product
     }
 
     // Setters
-    public function setAppID($appID)
+    private function setAppID()
     {
-        if (is_int($appID)) {
-            $this->appID = $appID;
-            return true;
-        }
-        return false;
+        $this->appID = uniqid("", true);
     }
 
     public function setName($name)
@@ -174,6 +181,15 @@ abstract class Product
     {
         if (is_string($desc)) {
             $this->desc = $desc;
+            return true;
+        }
+        return false;
+    }
+
+    public function setVersion($version)
+    {
+        if (is_string($version)) {
+            $this->version = $version;
             return true;
         }
         return false;
