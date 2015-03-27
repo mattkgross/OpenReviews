@@ -89,8 +89,8 @@ class SiteController extends Controller
         }
     }
 
-    public function actionAbout()
+    public function actionBrowse()
     {
-        return $this->render('about');
+        return $this->render('browse');
     }
 }
