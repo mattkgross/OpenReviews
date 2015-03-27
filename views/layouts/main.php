@@ -45,15 +45,20 @@ AppAsset::register($this);
                             'linkOptions' => ['data-method' => 'post']],
                 ],
             ]);
+        ?>
 
-        echo '<form class="navbar-form navbar-right" role="search" method="get" action="browse">'.
-            '<div class="form-group">'.
-            '<input type="text" name="q" class="form-control" placeholder="Search">'.
-            '</div>'.
-            '<button type="submit" class="btn btn-default">Submit</button>'.
-            '</form>';
+        <form class="navbar-form navbar-right" role="search" method="get" action="browse">
+            <div class="form-group">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Search" value="<?php print isset($_GET['q']) ? $_GET['q'] : ""; ?>">
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </span>
+                </div>
+            </div>
+        </form>
 
-
+        <?php
             NavBar::end();
         ?>
 
