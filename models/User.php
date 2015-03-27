@@ -1,6 +1,7 @@
 <?php
 
 namespace app\models;
+use yii\mongodb\Query;
 
 class User extends \yii\base\Object implements \yii\web\IdentityInterface
 {
@@ -32,7 +33,22 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public static function findIdentity($id)
     {
-        return isset(self::$users[$id]) ? new static(self::$users[$id]) : null;
+        $query = new Query;
+        $query->select(['id','username', 'password'])
+            ->from('users')
+            ->where(['id' => $id]);
+        $users = $query->all();
+
+        // If a user was returned
+        if(count($users) > 0) {
+            $users = $users[0];
+            $user = array('id'=>$users['id'],
+                'username'=>$users['username'],
+                'password'=>$users['password']
+            );
+            return new static($user);
+        }
+        return null;
     }
 
     /**
@@ -57,12 +73,22 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public static function findByUsername($username)
     {
-        foreach (self::$users as $user) {
-            if (strcasecmp($user['username'], $username) === 0) {
-                return new static($user);
-            }
-        }
+        $query = new Query;
+        $query->select(['id','username', 'password'])
+            ->from('users')
+            ->where(['username' => $username]);
+        $users = $query->all();
+        var_dump($users);
 
+        // If a user was returned
+        if(count($users) > 0) {
+            $users = $users[0];
+            $user = array('id'=>$users['id'],
+                'username'=>$users['username'],
+                'password'=>$users['password']
+            );
+            return new static($user);
+        }
         return null;
     }
 
