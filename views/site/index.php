@@ -1,7 +1,6 @@
 <?php
 /* @var $this yii\web\View */
 $this->title = 'Open Reviews';
-//print Yii::$app->mongodb->getCollection('customer');
 ?>
 <div class="site-index">
 

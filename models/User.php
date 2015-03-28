@@ -34,15 +34,15 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
     public static function findIdentity($id)
     {
         $query = new Query;
-        $query->select(['id','username', 'password'])
+        $query->select(['_id','username', 'password'])
             ->from('users')
-            ->where(['id' => $id]);
+            ->where(['_id' => $id]);
         $users = $query->all();
 
         // If a user was returned
         if(count($users) > 0) {
             $users = $users[0];
-            $user = array('id'=>$users['id'],
+            $user = array('id'=>$users['_id'],
                 'username'=>$users['username'],
                 'password'=>$users['password']
             );
@@ -74,22 +74,47 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
     public static function findByUsername($username)
     {
         $query = new Query;
-        $query->select(['id','username', 'password'])
+        $query->select(['_id','username', 'password'])
             ->from('users')
             ->where(['username' => $username]);
         $users = $query->all();
-        var_dump($users);
 
         // If a user was returned
         if(count($users) > 0) {
             $users = $users[0];
-            $user = array('id'=>$users['id'],
+            $user = array('id'=>$users['_id'],
                 'username'=>$users['username'],
                 'password'=>$users['password']
             );
             return new static($user);
         }
         return null;
+    }
+
+    /**
+     * Finds user by username
+     *
+     * @param  string      $username
+     * @return static|null
+     */
+    public static function createNewUser($username, $password)
+    {
+        $query = new Query;
+        $query->select(['_id','username', 'password'])
+            ->from('users')
+            ->where(['username' => $username]);
+        $users = $query->all();
+
+        // If the username already exists
+        if(count($users) > 0) {
+            return false;
+        }
+        else {
+            $hashedpass = \Yii::$app->getSecurity()->generatePasswordHash($password);
+            $collection = \Yii::$app->mongodb->getCollection('users');
+            return $collection->insert(['username' => $username, 'password' => $hashedpass]);
+        }
+
     }
 
     /**
@@ -124,6 +149,7 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
      */
     public function validatePassword($password)
     {
-        return $this->password === $password;
+        return \Yii::$app->getSecurity()->validatePassword($password, $this->password);
+        //return $this->password === $password;
     }
 }

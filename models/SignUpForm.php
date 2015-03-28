@@ -8,11 +8,11 @@ use yii\base\Model;
 /**
  * LoginForm is the model behind the login form.
  */
-class LoginForm extends Model
+class SignUpForm extends Model
 {
     public $username;
     public $password;
-    public $rememberMe = true;
+    public $confirm_password;
 
     private $_user = false;
 
@@ -24,11 +24,11 @@ class LoginForm extends Model
     {
         return [
             // username and password are both required
-            [['username', 'password'], 'required'],
-            // rememberMe must be a boolean value
-            ['rememberMe', 'boolean'],
+            [['username', 'password', 'confirm_password'], 'required'],
             // password is validated by validatePassword()
             ['password', 'validatePassword'],
+            // password is validated by validatePassword()
+            ['confirm_password', 'validatePassword'],
         ];
     }
 
@@ -44,8 +44,9 @@ class LoginForm extends Model
         if (!$this->hasErrors()) {
             $user = $this->getUser();
 
-            if (!$user || !$user->validatePassword($this->password)) {
-                $this->addError($attribute, 'Incorrect username or password.');
+            // Passwords are not identical
+            if(strcmp($this->password, $this->confirm_password) !== 0) {
+                $this->addError($attribute, 'Passwords do not match.');
             }
         }
     }
@@ -54,14 +55,23 @@ class LoginForm extends Model
      * Logs in a user using the provided username and password.
      * @return boolean whether the user is logged in successfully
      */
-    public function login()
+    public function signup()
     {
         if ($this->validate()) {
-            $result = Yii::$app->user->login($this->getUser(), $this->rememberMe ? 3600*24*30 : 0);
-            if($result) {
-                \Yii::$app->getSession()->setFlash('success', 'Welcome back, ' . $this->username . '.');
+            // Create the user
+            if(User::createNewUser($this->username, $this->password)) {
+                // Log them in
+                $result = Yii::$app->user->login($this->getUser(), 0);
+
+                if($result) {
+                    \Yii::$app->getSession()->setFlash('success', 'Welcome to Open Reviews, '.$this->username.'.');
+                } else {
+                    \Yii::$app->getSession()->setFlash('error', 'Something went wrong.');
+                }
+
+                return $result;
             }
-            return $result;
+            return false;
         } else {
             return false;
         }
@@ -74,7 +84,7 @@ class LoginForm extends Model
      */
     public function getUser()
     {
-        if ($this->_user === false) {
+        if ($this->_user === false or is_null($this->_user)) {
             $this->_user = User::findByUsername($this->username);
         }
 
