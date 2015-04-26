@@ -171,6 +171,10 @@ class SiteController extends Controller
             array_push($prods, $product);
         }
 
+        usort( $prods, function( $a, $b ) {
+            return $a['name'] == $b['name'] ? 0 : ($a['name'] > $b['name']) ? 1 : -1;
+        });
+
         return $this->render('browse', [
             'products' => $prods,
         ]);
