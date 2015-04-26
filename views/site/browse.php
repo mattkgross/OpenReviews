@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     foreach($products as $product):
                         $id = (string)$product['_id'];
                         print "<a href=" . Url::to(['product', 'id' => $id]) . " class='list-group-item'>" .
-                            "<h4 class='list-group-item-heading'>" . $product['name'] ."</h4></a>";
+                            "<h4 class='list-group-item-heading'>" . $product['name'] ."<span class='pull-right'>". $product['avgRating']. "/5</span></h4></a>";
                     endforeach;
                 ?>
                 </ul>

@@ -13,6 +13,8 @@ use yii\mongodb\Query;
 
 class SiteController extends Controller
 {
+    public $enableCsrfValidation = false;
+
     public function behaviors()
     {
         return [
@@ -51,7 +53,51 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
-        return $this->render('index');
+
+        $query = new Query;
+        $query->select(['_id','name', 'description', 'website', 'os'])
+            ->from('products');
+        $products = $query->all();
+
+        $prods = array();
+        foreach($products as $product) {
+            $query = new Query;
+            $query->select(['username','rating', 'comment'])->from('reviews')->where(['prodId' => (string)$product['_id']]);
+            $reviews = $query->all();
+
+            if(count($reviews)) {
+                $avgReview = 0;
+                foreach ($reviews as $review) {
+                    $avgReview += intval($review['rating']);
+                }
+                $avgReview = $avgReview / count($reviews);
+                $product['avgRating'] = round($avgReview,2);
+            }
+            else {
+                $product['avgRating'] = "No Reviews";
+            }
+
+            array_push($prods, $product);
+        }
+
+
+        usort( $prods, function( $a, $b ) {
+            return floatval($a['avgRating']) == floatval($b['avgRating']) ? 0 : (floatval($a['avgRating']) < floatval($b['avgRating'])) ? 1 : -1;
+        });
+
+        $prods = array_slice($prods,0, 3);
+
+        $query = new Query;
+        $query->select(['prodId','username','rating', 'comment'])->from('reviews');
+        $reviews = $query->all();
+
+        $reviews = array_reverse($reviews);
+        $reviews = array_slice($reviews, 0, 3);
+
+        return $this->render('index', [
+            'prods' => $prods,
+            'reviews' => $reviews,
+        ]);
     }
 
     public function actionLogin()
@@ -103,8 +149,30 @@ class SiteController extends Controller
         $query->select(['_id','name', 'description', 'website', 'os'])
             ->from('products');
         $products = $query->all();
+
+        $prods = array();
+        foreach($products as $product) {
+            $query = new Query;
+            $query->select(['username','rating', 'comment'])->from('reviews')->where(['prodId' => (string)$product['_id']]);
+            $reviews = $query->all();
+
+            if(count($reviews)) {
+                $avgReview = 0;
+                foreach ($reviews as $review) {
+                    $avgReview += intval($review['rating']);
+                }
+                $avgReview = $avgReview / count($reviews);
+                $product['avgRating'] = round($avgReview,2);
+            }
+            else {
+                $product['avgRating'] = "No Reviews";
+            }
+
+            array_push($prods, $product);
+        }
+
         return $this->render('browse', [
-            'products' => $products,
+            'products' => $prods,
         ]);
     }
 
@@ -114,9 +182,26 @@ class SiteController extends Controller
         $query->select(['_id','name', 'description', 'website', 'os'])->from('products')->where(['_id' => $id]);
         $product = $query->one();
 
+        $query = new Query;
+        $query->select(['username','rating', 'comment'])->from('reviews')->where(['prodId' => $id]);
+        $reviews = $query->all();
+
         return $this->render('product', [
             'product' => $product,
+            'reviews' => $reviews,
         ]);
+    }
+
+    public function actionAddreview() {
+        $post = Yii::$app->request->post();
+        $rating = $post['rating'];
+        $comment = $post['comment'];
+        $prodId = $post['prodId'];
+
+        $collection = \Yii::$app->mongodb->getCollection('reviews');
+        $collection->insert(['prodId' => $prodId, 'username' => Yii::$app->user->identity->username, 'rating' => $rating, 'comment' => $comment]);
+
+        return $this->redirect(array('/product', 'id' => $prodId));
     }
 
     public function actionAddproduct($name, $description, $website, $os)
