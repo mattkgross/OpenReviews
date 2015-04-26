@@ -9,10 +9,11 @@ class Product
     private $website; // string
     private $os; // string
 
-    function __construct()
+    public function __construct()
     {
         // Create product id somehow? Lol.
     }
+
 
     public function getId()
     {
