@@ -114,7 +114,6 @@ class User extends \yii\base\Object implements \yii\web\IdentityInterface
             $collection = \Yii::$app->mongodb->getCollection('users');
             return $collection->insert(['username' => $username, 'password' => $hashedpass]);
         }
-
     }
 
     /**

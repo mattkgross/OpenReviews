@@ -9,6 +9,7 @@ use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\SignUpForm;
 use app\models\ContactForm;
+use yii\mongodb\Query;
 
 class SiteController extends Controller
 {
@@ -98,6 +99,30 @@ class SiteController extends Controller
 
     public function actionBrowse()
     {
-        return $this->render('browse');
+        $query = new Query;
+        $query->select(['_id','name', 'description', 'website', 'os'])
+            ->from('products');
+        $products = $query->all();
+        return $this->render('browse', [
+            'products' => $products,
+        ]);
+    }
+
+    public function actionProduct($id)
+    {
+        $query = new Query;
+        $query->select(['_id','name', 'description', 'website', 'os'])->from('products')->where(['_id' => $id]);
+        $product = $query->one();
+
+        return $this->render('product', [
+            'product' => $product,
+        ]);
+    }
+
+    public function actionAddproduct($name, $description, $website, $os)
+    {
+        $collection = \Yii::$app->mongodb->getCollection('products');
+        return $collection->insert(['name' => $name, 'description' => $description, 'website' => $website, 'os' => $os]);
+        return "done";
     }
 }
