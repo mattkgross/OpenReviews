@@ -18,7 +18,9 @@ $this->params['breadcrumbs'][] = $this->title;
         <div class="col-md-9">
             <div class="panel panel-default">
                 <div class="panel-heading">Products</div>
-                <div class="panel-body"></div>
+                <div class="panel-body">
+
+                </div>
             </div>
         </div>
         <div class="col-md-3">
